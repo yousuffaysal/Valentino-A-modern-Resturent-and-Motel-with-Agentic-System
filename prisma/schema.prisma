@@ -7,23 +7,34 @@ generator client {
   provider = "prisma-client-js"
 }
 
+/// Guest reservations created by the booking panel or the AI reception desk.
 model Booking {
   id        String   @id
   name      String
   mobile    String
   email     String?
   room      String
+  roomCode  String?
   rate      Int
+  nights    Int      @default(1)
+  adults    Int      @default(2)
+  children  Int      @default(0)
+  nrooms    Int      @default(1)
   ci        String
   co        String
   status    String   @default("Paid")
   date      String
   notes     String?
   arrival   String?
+  addons    String?
   pay       String?  @default("bkash")
   createdAt DateTime @default(now())
+
+  @@index([ci, co])
+  @@index([roomCode])
 }
 
+/// Sky View rooftop table reservations.
 model TableReservation {
   id        String   @id
   name      String
@@ -32,5 +43,118 @@ model TableReservation {
   time      String
   party     Int
   code      String   @unique
+  status    String   @default("Held")
   createdAt DateTime @default(now())
+}
+
+/// Messages sent from the contact page form.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  mobile    String
+  message   String
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+/// Room categories. Rates, copy, imagery and inventory are admin editable.
+model Room {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  slug      String   @unique
+  name      String
+  nameBn    String
+  config    String
+  configBn  String
+  sleeps    Int
+  rate      Int
+  img       String
+  alt       String
+  blurb     String
+  blurbBn   String
+  inventory Int      @default(4)
+  active    Boolean  @default(true)
+  sort      Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+/// Sky View menu lines.
+model MenuItem {
+  id        String   @id @default(cuid())
+  cat       String
+  name      String
+  price     Int
+  desc      String
+  active    Boolean  @default(true)
+  sort      Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+/// Photographs shown in the gallery grid.
+model GalleryImage {
+  id        String   @id @default(cuid())
+  src       String
+  cat       String
+  alt       String
+  active    Boolean  @default(true)
+  sort      Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+/// Facilities included in the room rate.
+model Facility {
+  id        String   @id @default(cuid())
+  en        String
+  bn        String
+  copy      String
+  active    Boolean  @default(true)
+  sort      Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+/// Special services reception can arrange.
+model Service {
+  id        String   @id @default(cuid())
+  num       String
+  en        String
+  bn        String
+  copy      String
+  img       String
+  active    Boolean  @default(true)
+  sort      Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+/// Places the tour desk sends guests to.
+model Attraction {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  dist      String
+  ph        String
+  line      String
+  img       String
+  active    Boolean  @default(true)
+  sort      Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+/// Optional extras offered in step three of the booking flow.
+model Addon {
+  id        String   @id
+  label     String
+  labelBn   String
+  price     Int
+  unit      String
+  unitBn    String
+  active    Boolean  @default(true)
+  sort      Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+/// Single value site settings: phone numbers, address lines, social links.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }

@@ -1,60 +1,75 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
+import { getRooms, getSettings } from '@/lib/content';
+import { iso } from '@/lib/format';
 
-const SYSTEM_PROMPT = `You are the AI reception assistant for Hotel Valentino, a premium hotel at Boro Masjid Moar, Main Road, Maijdee Court, Noakhali-3800, Bangladesh. Phone: +880 1795 855555.
+export const dynamic = 'force-dynamic';
 
-Room Categories & Rates (per night, in BDT):
-1. Single Deluxe (HV-01) - BDT 2,500 - 1 single bed, work desk, sofa, Main Road view.
-2. Couple Deluxe (HV-02) - BDT 4,500 - 1 couple bed, wardrobe, dressing mirror.
-3. Twin Deluxe (HV-03) - BDT 6,000 - 2 single beds, feature wall.
-4. Triple Deluxe (HV-04) - BDT 7,500 - 1 couple bed + 1 single bed, sunset window.
-5. Honeymoon Suite (HV-05) - BDT 8,000 - King bed, brass lamps, quietest corner.
-6. VIP Suite (HV-06) - BDT 10,000 - Marble floor, separate desk, wide window.
-7. Deluxe Four Bed (HV-07) - BDT 10,000 - 2 couple beds in one room.
-8. Premium Executive Suite (HV-08) - BDT 12,000 - King bed, lounge, panoramic view.
+const MODEL = 'llama-3.3-70b-versatile';
 
-Key Details:
-- 24-hour reception desk, 24-hour room service.
-- Free Wi-Fi, free guest parking.
-- Sky View rooftop restaurant (Appetizers, Platters, Steak, Soup, Desserts).
-- Distance: 1 km from Maijdee Court train station, 1 km from Maijdee Court bus station, 8 km from NSTU campus.
-- Payment options: bKash, Nagad, Card, or Pay at desk on arrival.
+/**
+ * The AI reception desk. The prompt is built from live room data so rates the
+ * assistant quotes always match what the admin has set, and the API key stays
+ * on the server, unlike the prototype which shipped it to the browser.
+ */
+async function buildSystemPrompt() {
+  const [rooms, settings] = await Promise.all([getRooms(), getSettings()]);
+  const roomLines = rooms
+    .map((r) => `  * ${r.name} (code "${r.code}", rate BDT ${r.rate.toLocaleString('en-US')}, sleeps ${r.sleeps})`)
+    .join('\n');
 
-Instructions:
-- Be polite, welcoming, concise, and helpful.
-- Answer questions accurately about rooms, rates, location, Sky View menu, and booking policies.
-- If the user provides booking info (dates, room choice, guest name, contact), guide them to use the Book Now button or summarize their booking request.
-`;
+  return `You are the AI reception assistant for Hotel Valentino, a premium hotel at Boro Masjid Moar, Main Road, Maijdee Court, Noakhali-3800, Bangladesh. Phone: ${settings.phonePrimary}.
+Today's date is: ${iso(new Date())}. When users refer to dates like "next week", "August 21", "tomorrow", or "next month 21 to 23", parse them relative to today's date.
+
+HOTEL FACTS:
+- Room Codes, Slugs & Rates:
+${roomLines}
+- All rates include free Wi-Fi and free parking.
+- Restaurant: Sky View rooftop kitchen — Chinese, Japanese, Korean food. Also an Italian cafe with Danesi Emerald beans.
+- Location: 1 km from train station and bus station.
+
+YOUR BEHAVIOR:
+- Warm, professional, concise. Max 2-3 sentences per reply.
+- Conversational Booking Flow: If a user wants to book or reserve a room, you must actively collect these 5 pieces of information:
+  1. Check-in & Check-out dates (or check-in date and number of nights)
+  2. Guest Name
+  3. Mobile number (e.g. 017xxxxxxxx)
+  4. Email address
+  5. Room type choice (recommend a room matching their occupancy/needs from the list above)
+- State Syncing: At the very end of EVERY response, always output the extracted fields as JSON in this hidden block:
+  ||BOOKING_DATA:{"ci":"YYYY-MM-DD","co":"YYYY-MM-DD","adults":X,"nrooms":Y,"name":"Name","mobile":"Phone","email":"Email","picked":"HV-XX"}||
+  Only include fields that you have collected. If a field is not yet known, do not include it.
+- Finalizing: Once you have gathered ALL 5 pieces of information, summarize them clearly and ask the user to confirm (e.g., "I have your details: [Summary]. Shall I proceed to payment and confirm?").
+- When they confirm (e.g. they say "yes", "proceed", "sure", or "confirm"), append the '"complete":true' property to the JSON block. This will automatically trigger the checkout panel.
+
+Example response:
+"Certainly! I can book that for you. What is your full name and mobile number? ||BOOKING_DATA:{"ci":"2026-08-21","co":"2026-08-23","adults":2,"picked":"HV-03"}||"`;
+}
 
 export async function POST(req: Request) {
+  const fallback = 'Connection issue. Please call us on +880 1795 855555.';
   try {
     const { messages } = await req.json();
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
       return NextResponse.json({
         success: false,
-        reply: 'Reception assistant key not configured in environment. Please call +880 1795 855555.',
+        reply: 'Reception assistant is not configured yet. Please call +880 1795 855555.',
       });
     }
+
     const groq = new Groq({ apiKey });
-
     const completion = await groq.chat.completions.create({
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        ...(messages || []),
-      ],
-      model: 'llama-3.3-70b-versatile',
-      temperature: 0.5,
-      max_tokens: 400,
+      model: MODEL,
+      messages: [{ role: 'system', content: await buildSystemPrompt() }, ...(messages || []).slice(-16)],
+      temperature: 0.2,
+      max_tokens: 300,
     });
 
-    const reply = completion.choices[0]?.message?.content || 'Connection issue. Please call us on +880 1795 855555.';
+    const reply = completion.choices[0]?.message?.content?.trim() || fallback;
     return NextResponse.json({ success: true, reply });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Groq AI error:', error);
-    return NextResponse.json({
-      success: false,
-      reply: 'Connection issue. Please call us on +880 1795 855555.',
-    });
+    return NextResponse.json({ success: false, reply: fallback });
   }
 }

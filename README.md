@@ -1,145 +1,104 @@
-# 🏨 Hotel Valentino & Sky View Restaurant — Agentic AI Motel System
+# Hotel Valentino
 
-[![Next.js 14](https://img.shields.io/badge/Next.js-14.2-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![PostgreSQL](https://img.shields.io/badge/Neon_PostgreSQL-Database-336791?style=for-the-badge&logo=postgresql)](https://neon.tech/)
-[![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
-[![Groq AI](https://img.shields.io/badge/Groq_AI-Llama_3.3_70B-f05032?style=for-the-badge)](https://groq.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+The Hotel Valentino site (Main Road, Maijdee Court, Noakhali) built as a Next.js 14 App Router
+application, with a Neon PostgreSQL database behind it so reception can change rates, content and
+reservations without a deploy.
 
-An architectural masterpiece in hospitality software: **Hotel Valentino** is a full-stack Next.js 14 App Router application paired with **Neon Cloud PostgreSQL**, powered by an autonomous **Agentic AI Reception System** and an editorial design aesthetic.
-
-Located at the iconic *Boro Masjid Moar, Main Road, Maijdee Court, Noakhali-3800, Bangladesh*, this system seamlessly merges modern web design, real-time database persistence, instant bilingual localization (English & Bangla), and intelligent conversational AI.
+The design source is the approved single-file prototype (`Hotel Valentino.dc.html`). Every section,
+transition and piece of copy in the public site is a port of that file; the database and admin portal
+are the additions that make it operable.
 
 ---
 
-## 🌟 Key Highlights & Features
+## Running it
 
-- **⚡ Full-Stack Next.js 14 App Router**: Server and client components built with high-performance React 18 primitives.
-- **🐘 Neon Cloud PostgreSQL & Prisma ORM**: Instant cloud database connectivity with automated migrations and real-time record synchronization for room bookings and restaurant table reservations.
-- **🤖 Agentic AI Reception Assistant**: An autonomous 24/7 concierge powered by Groq Llama 3.3 70B that answers guest inquiries, recommends room categories based on budget/party size, provides route guidance, and assists with reservations.
-- **🌐 Dynamic Bilingual Localization (EN ↔ BN)**: Complete English and Bangla language toggle across every section of the application—from hero copy to guest counter labels, date formats, invoice generators, and validation errors.
-- **🗺️ Interactive Minimalist B&W Real Street Map**: High-contrast black & white vector road map of Maijdee Court featuring an animated pulsing red dot location indicator.
-- **📊 Executive Admin Dashboard**: Live revenue analytics, total booking counters, occupancy metrics, filterable status toggles (`Paid` vs `Pending`), search functionality, and print-ready **Invoice Generator** (`@media print`).
-- **🍽️ Sky View Rooftop Restaurant Integration**: Interactive dining menu filters (Appetizers, Sizzling Platters, Steaks, Soups) and a 3-step rooftop table reservation workflow.
-
----
-
-## 🎨 Design Philosophy & Aesthetics
-
-The UI/UX of Hotel Valentino is crafted to evoke **editorial luxury, timeless elegance, and tactile feedback**.
-
-```
-                        DESIGN SYSTEM TOKENS
-┌───────────────────────────┬───────────────────────────┬───────────────────────────┐
-│     Limestone Surface     │        Night Slate        │        Crimson Lacquer    │
-│          #E9EAE5          │          #0E1114          │            #A81E2D        │
-└───────────────────────────┴───────────────────────────┴───────────────────────────┘
-```
-
-### 1. Curated Color Palette
-- **Limestone (`#E9EAE5`)**: A soft, matte architectural stone tone used as the primary background.
-- **Night (`#0E1114`)**: Deep obsidian black utilized for hero sections, rooftop dining components, and executive admin screens.
-- **Crimson Lacquer (`#A81E2D`)**: The primary brand accent tone representing warmth and hospitality.
-- **Warm Brass (`#A98A55`)**: Used for subtitled labels, dates, and executive indicators.
-
-### 2. Modern Editorial Typography
-- **Primary Body**: `Plus Jakarta Sans` for crisp legibility across mobile and desktop devices.
-- **Monospace Numerical Accent**: `JetBrains Mono` for tabular pricing, date ranges, room codes (`HV-01` to `HV-08`), and invoice numbers.
-- **Bengali Sub-system**: `Noto Sans Bengali` providing fluid typography when toggled to Bangla mode.
-
-### 3. Micro-Animations & Dynamic Feedback
-- **Pulsing Map Beacon**: Keyframe `@keyframes hv-map-pulse` generates an expanding red radar pulse over the hotel's exact coordinates.
-- **Slide-Over Drawers**: Multi-step booking workflows animate gracefully from the right edge with backdrop blur filters.
-
----
-
-## 🧠 The Agentic AI Reception System
-
-### What makes it "Agentic"?
-Unlike basic chatbots that simply echo fixed FAQ templates, an **Agentic AI System** possesses **context awareness, goal orientation, decision-making capabilities, and actionable guidance**:
-
-1. **Context Window Integration**: The AI receives a structured knowledge representation of Hotel Valentino (room specs, pricing tiers, menu items, local distances to NSTU/train station, booking policies).
-2. **Intent Recognition & Goal Solving**: If a guest says *"I am travelling with my wife and child for 2 nights on a 15,000 BDT budget"*, the Agentic AI calculates room fit, recommends the **Triple Deluxe** or **Couple Deluxe**, and guides them directly to the reservation drawer.
-3. **Multilingual Reasoning**: Seamlessly parses and responds in both English and Bangla.
-
-### How the Agentic AI was Built
-```mermaid
-graph LR
-    User[Guest Prompt] --> API[/api/chat Route]
-    API --> SystemPrompt[System Prompt & Hotel Knowledge Base]
-    SystemPrompt --> GroqEngine[Groq Llama 3.3 70B Model]
-    GroqEngine --> Response[Context-Aware Natural Response]
-    Response --> UI[Floating AI Reception Widget]
-```
-
-- **Runtime**: Next.js Serverless API Route (`/app/api/chat/route.ts`).
-- **Engine**: Groq SDK invoking the `llama-3.3-70b-versatile` model with ultra-low latency inference (~200ms response time).
-- **Security**: Key authorization handled strictly on the server-side via environment variables (`process.env.GROQ_API_KEY`).
-
----
-
-## 🏗️ System Architecture & Stack
-
-```
-                             ARCHITECTURE OVERVIEW
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│                             Next.js 14 App Router                                │
-├───────────────────────────────┬───────────────────┬──────────────────────────────┤
-│  Client Components (React 18) │ Context Providers │      Server API Routes       │
-│  - Hero & Room Showcase       │ - LanguageContext │  - GET/POST /api/bookings    │
-│  - 6-Step Booking Drawer      │   (EN <-> BN)     │  - PATCH/DELETE /api/bookings│
-│  - 3-Step Table Drawer        │                   │  - POST /api/reservations    │
-│  - Admin Dashboard & Invoice  │                   │  - POST /api/chat (Groq)     │
-└───────────────┬───────────────┴───────────────────┴──────────────┬───────────────┘
-                │                                                  │
-                ▼                                                  ▼
-      Static Media Assets                                Prisma Client (ORM)
-  (Real Map B&W, Room Photos)                                      │
-                                                                   ▼
-                                                         Neon Cloud PostgreSQL
-                                                           (Cloud Database)
-```
-
----
-
-## 🚀 Getting Started Locally
-
-### Prerequisites
-- Node.js 18.x or higher
-- npm or pnpm
-
-### 1. Clone & Install
 ```bash
-git clone https://github.com/yousuffaysal/Valentino-A-modern-Resturent-and-Motel-with-Agentic-System.git
-cd Valentino-A-modern-Resturent-and-Motel-with-Agentic-System
 npm install
+npm run db:push     # create the tables
+npm run db:seed     # load the design defaults (safe to re-run)
+npm run dev         # http://localhost:3000
 ```
 
-### 2. Environment Configuration
-Create a `.env` file in the root directory:
-```env
-DATABASE_URL="postgresql://neondb_owner:npg_obp02BwcjCry@ep-morning-pond-ax3h205s-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-GROQ_API_KEY="your-groq-api-key-here"
-```
+Environment (`.env`, see `.env.example`):
 
-### 3. Database Push & Prisma Setup
-```bash
-npx prisma db push
-```
-
-### 4. Run Development Server
-```bash
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+| Key | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Neon / PostgreSQL connection string |
+| `GROQ_API_KEY` | Server-side key for the AI reception desk |
+| `ADMIN_PASSWORD` | Password for `/admin`. Falls back to `valentino` if unset — set it before going live |
 
 ---
 
-## 📄 License & Author
+## How it is put together
 
-Distributed under the MIT License.
+### Content: database first, design defaults second
 
-Developed with precision and vision by:
+`lib/defaults.ts` holds the content exactly as signed off. `lib/content.ts` reads each collection from
+the database and falls back to those defaults when a table is empty or the database is unreachable, so
+the site never renders blank. Seeding copies the defaults into the database; from then on the admin
+portal is the source of truth.
 
-### **Yousuf H Faysal**
-*Software Architect & AI Engineer*
+Editable collections: rooms, menu, gallery, facilities, services, attractions, add-ons, settings.
+
+### Motion
+
+`components/motion/MotionRoot.tsx` is the whole animation system in one client component: Lenis smooth
+scroll, the section rail, reveal / counter / clip-fill observers, hero split text, the pinned room
+track, the scaling wordmark mask, the flipping menu book, and the responsive chrome rules. Sections opt
+in with `data-hv-*` and `data-rev` / `data-fill` / `data-count` attributes, the same way the prototype
+opted in with refs.
+
+### Styles
+
+The prototype is written entirely in inline CSS declarations. Rather than hand-convert them (and drift
+from the design), `lib/css.ts` parses those declaration strings into React style objects at runtime,
+memoised per string. `data-hover-style` reproduces the prototype's `style-hover` attribute.
+
+### State
+
+`context/SiteContext.tsx` owns language, the booking panel state machine (dates → room → add-ons →
+details → payment → confirmation), the Sky View table flow, the chat transcript and the page-transition
+curtain. `components/chrome/TLink.tsx` plays that curtain before each route change.
+
+### Availability
+
+`lib/availability.ts` computes what is free for a stay from category inventory minus overlapping
+reservations, rather than the prototype's pseudo-random placeholder. If the database is unavailable it
+falls back to the prototype behaviour so the booking flow still works.
+
+---
+
+## API
+
+| Route | Method | Auth | Purpose |
+| --- | --- | --- | --- |
+| `/api/availability` | GET | public | Rooms free for `?ci=&co=&guests=` |
+| `/api/bookings` | POST | public | Guest booking from the panel or the chat |
+| `/api/bookings` | GET | admin | Reservation list |
+| `/api/bookings/[id]` | PATCH, DELETE | admin | Mark paid / cancel |
+| `/api/reservations` | POST / GET | public / admin | Sky View tables |
+| `/api/messages` | POST / GET, PATCH | public / admin | Contact form |
+| `/api/content/[model]` | GET / POST, PATCH, DELETE | public / admin | Rooms, menu, gallery, facilities, services, attractions, add-ons |
+| `/api/settings` | GET / PATCH | public / admin | Phones, address, social, hours |
+| `/api/chat` | POST | public | AI reception desk (Groq, key stays server side) |
+| `/api/admin/session` | POST / DELETE / GET | — | Log in, log out, check session |
+
+Admin routes are guarded by an httpOnly cookie holding a hash of `ADMIN_PASSWORD`.
+
+---
+
+## Admin portal
+
+`/admin` — password gated. Dashboard (revenue, occupancy tonight, room nights by weekday, table count),
+bookings table with printable invoices, room management (rate, inventory, bookable), Sky View menu,
+gallery, contact messages and site settings. Every change writes to the database and appears on the
+live site on the next page load; pages render dynamically for that reason.
+
+---
+
+## Notes
+
+- Photography lives in `public/img` and `public/uploads`. The files are large (~2 MB each); compressing
+  them or moving to `next/image` is the obvious next performance win.
+- The AI assistant returns a hidden `||BOOKING_DATA:{…}||` block that the client parses to pre-fill the
+  booking panel, and `"complete":true` opens it at the payment step.
