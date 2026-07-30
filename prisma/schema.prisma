@@ -1,0 +1,36 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Booking {
+  id        String   @id
+  name      String
+  mobile    String
+  email     String?
+  room      String
+  rate      Int
+  ci        String
+  co        String
+  status    String   @default("Paid")
+  date      String
+  notes     String?
+  arrival   String?
+  pay       String?  @default("bkash")
+  createdAt DateTime @default(now())
+}
+
+model TableReservation {
+  id        String   @id
+  name      String
+  mobile    String
+  date      String
+  time      String
+  party     Int
+  code      String   @unique
+  createdAt DateTime @default(now())
+}
