@@ -191,18 +191,38 @@ export function MotionRoot({ showRail = true, smoothScroll = true }: { showRail?
   const splitMani = useCallback(() => {
     const s = store.current;
     const el = q('[data-hv-mani]') as (HTMLElement & { __s?: number }) | null;
-    if (!el || el.__s) return;
+    if (!el) return;
+
+    /*
+     * `afterRoute` clears `words` on every pass and runs more than once per
+     * navigation, so a plain "already split" bail-out would leave the store
+     * empty while the spans stayed in the DOM — the frame loop would then skip
+     * the reveal and the paragraph would sit at its faded start colour forever.
+     * Re-adopt whatever is already there; only rebuild when React has
+     * reconciled the spans away and put the raw text node back.
+     */
+    if (el.__s) {
+      s.words = qa('[data-hv-mani] [data-hv-word]');
+      if (s.words.length) {
+        s.force = true;
+        return;
+      }
+      el.__s = 0;
+    }
+
     el.__s = 1;
     const words = (el.textContent || '').trim().split(/\s+/);
     el.textContent = '';
     s.words = words.map((word, i) => {
       const span = document.createElement('span');
+      span.dataset.hvWord = '1';
       span.textContent = word;
       span.style.cssText = 'display:inline-block;opacity:.14;color:#5B6058;will-change:opacity';
       el.appendChild(span);
       if (i < words.length - 1) el.appendChild(document.createTextNode(' '));
       return span;
     });
+    s.force = true;
     if (s.reduced) {
       s.words.forEach((span) => {
         span.style.opacity = '1';
