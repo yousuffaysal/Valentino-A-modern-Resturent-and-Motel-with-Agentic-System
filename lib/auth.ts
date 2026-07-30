@@ -23,6 +23,18 @@ export function isAdmin(): boolean {
   return !!value && value === adminToken();
 }
 
+/*
+ * Drives the login hint, which names the fallback password out loud. That is a
+ * useful nudge on a dev machine and a handout to anyone who opens /admin on a
+ * deployment, so it is limited to non-production builds. Production still falls
+ * back to DEFAULT_PASSWORD when ADMIN_PASSWORD is unset — it just stops
+ * advertising it, and logs a warning to the server instead.
+ */
 export function usingDefaultPassword(): boolean {
-  return !process.env.ADMIN_PASSWORD;
+  if (process.env.ADMIN_PASSWORD) return false;
+  if (process.env.NODE_ENV === 'production') {
+    console.warn('[auth] ADMIN_PASSWORD is not set — /admin is accepting the built-in default password.');
+    return false;
+  }
+  return true;
 }
