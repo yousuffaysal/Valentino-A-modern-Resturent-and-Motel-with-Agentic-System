@@ -124,7 +124,8 @@ interface SiteContextValue {
   chatInput: string;
   setChatInput: (v: string) => void;
   chatMsgs: ChatMsg[];
-  chatSend: (preset?: string) => void;
+  /** Resolves with the reply as spoken text, or null when nothing came back. */
+  chatSend: (preset?: string, opts?: { voice?: boolean }) => Promise<string | null>;
 }
 
 const noop = () => {};
@@ -469,9 +470,9 @@ export function SiteProvider({
   const toggleChat = useCallback(() => setChatOpen((o) => !o), []);
 
   const chatSend = useCallback(
-    async (preset?: string) => {
+    async (preset?: string, opts?: { voice?: boolean }): Promise<string | null> => {
       const q = (preset ?? chatInput).trim();
-      if (!q) return;
+      if (!q) return null;
       chatHistory.current = [...chatHistory.current, { role: 'user', content: q }];
       setChatInput('');
       setChatMsgs((m) => [...m, { who: 'you', text: q }, { who: 'bot', text: '…' }]);
@@ -480,7 +481,8 @@ export function SiteProvider({
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: chatHistory.current }),
+          /* Voice turns get a prompt written for the ear rather than the screen. */
+          body: JSON.stringify({ messages: chatHistory.current, voice: !!opts?.voice }),
         });
         const data = await res.json();
         let reply: string =
@@ -537,11 +539,11 @@ export function SiteProvider({
         if (shouldBook && !parsed?.complete) {
           window.setTimeout(() => setPanel('book'), 400);
         }
+        return reply;
       } catch {
-        setChatMsgs((m) => [
-          ...m.slice(0, -1),
-          { who: 'bot', text: 'Connection issue. Please call us on +880 1795 855555.' },
-        ]);
+        const failed = 'Connection issue. Please call us on +880 1795 855555.';
+        setChatMsgs((m) => [...m.slice(0, -1), { who: 'bot', text: failed }]);
+        return failed;
       }
     },
     [chatInput, adults, kids, loadAvail],

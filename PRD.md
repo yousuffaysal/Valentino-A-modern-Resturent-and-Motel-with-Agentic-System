@@ -142,6 +142,36 @@ phone number rather than an error.
 
 **AI-6 Tone.** Warm, professional, two to three sentences.
 
+### 6.1 Voice
+
+The desk can be spoken to. Voice is an addition to the typed chat, never a replacement: the transcript,
+the input box and the suggestion chips stay live throughout, and every spoken turn is written into the
+same transcript.
+
+**VO-1 One tap starts a conversation.** Tapping the microphone opens the desk, speaks a greeting, and
+starts listening — a guest who does not want to type never has to.
+
+**VO-2 The guest does not manage the microphone.** Recording ends on its own when they stop talking
+(silence detection), with a ceiling of 20 seconds per turn. No press-and-hold.
+
+**VO-3 It answers in the guest's language.** English is transcribed by `whisper-large-v3-turbo`,
+বাংলা by `whisper-large-v3`. English replies are spoken by a natural-voice model (Orpheus on Groq);
+বাংলা and any failure fall back to the device's own voice.
+
+**VO-3a It sounds spoken, not read.** In voice mode the assistant is briefed for the ear: no lists or
+symbols, amounts and dates in words, one question per turn.
+
+**VO-4 Interruptible.** Tapping the meter while it is speaking stops it and starts listening. The
+conversation loops — listen, answer, listen — until the guest ends it or goes quiet.
+
+**VO-5 It shows it is hearing you.** The meter is driven by the live microphone level while listening,
+and by the state of the turn otherwise, so the guest can always see whether they are being heard,
+waited on, or answered.
+
+**VO-6 Every failure lands somewhere.** No microphone, refused permission, silence, an unintelligible
+turn, or a device with no voice for the active language — each says what happened and leaves the typed
+chat working.
+
 ## 7. Scope — admin portal
 
 `/admin`, password gated, seven panels. Every write lands in the database and appears on the public
